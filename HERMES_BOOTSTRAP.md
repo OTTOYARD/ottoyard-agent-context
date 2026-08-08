@@ -34,12 +34,17 @@ system. Those are the primary sources; `docs/` is synthesis on top of them.
 
 **Three traps that will bite you in the first ten minutes if you do not know them:**
 
-1. 🚨 **`git fetch` before you reason about anything.** The local clones on the founder's Desktop are
-   badly stale — `otto-q-core` was **77 commits behind** its remote. **The first draft of this very
-   package was written from them and was wrong about migration state, branch state, and several
-   "open" defects that were already fixed.** Always compare against `origin/main`, never local
-   `main`, and never treat a branch's continued existence as evidence it is unmerged
-   (`git rev-list --count origin/main..origin/<branch>` — 0 means merged).
+1. 🚨 **Clone fresh. GitHub is the only source of truth.**
+   **There are no persistent local working copies on this project.** The founder deleted them on
+   2026-08-08 because they drifted — `otto-q-core` was **77 commits behind** — and **the first draft
+   of this very package was written from them and was wrong** about migration state, branch state,
+   and several "open" defects that were already fixed.
+   **How to work:** clone fresh into your own directory → build and verify → push a `hermes/<slug>`
+   branch → open the PR → delete the clone.
+   **Never leave a branch unpushed at the end of a session** — six branches were nearly lost that
+   way, including 198 lines of evidence written the same day. And never treat a branch's continued
+   existence as evidence it is unmerged (`git rev-list --count origin/main..origin/<branch>` — 0
+   means merged).
 2. **`OTTOYARD` on GitHub is a personal account, not an organization.** Everyone calls it "the org."
    `/orgs/OTTOYARD/...` API calls **404**. Use `/user/repos`.
 3. **Every `supabase/config.toml` in every repo points at the wrong project** — dead refs

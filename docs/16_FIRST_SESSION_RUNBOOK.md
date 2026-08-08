@@ -5,7 +5,17 @@ finding that several practical things a fresh agent needs were assumed rather th
 
 ---
 
-## 0. Two facts that will trip you immediately
+## 0a. ⭐ The working-copy rule — read this before you clone anything
+
+> **GitHub is the only source of truth. Clone fresh, work, push a branch, delete the clone.**
+
+There are **no persistent local working copies** on this project any more. The founder removed them
+on 2026-08-08 after stale clones (up to **77 commits behind**) caused real errors — including in the
+first draft of this package. Full account in `docs/17_LOVABLE_AND_SYNC.md` §7.
+
+**Never leave a branch unpushed at the end of a session.** Six branches were nearly lost that way.
+
+## 0. Two more facts that will trip you immediately
 
 ### `OTTOYARD` on GitHub is a **personal account, not an organization**
 

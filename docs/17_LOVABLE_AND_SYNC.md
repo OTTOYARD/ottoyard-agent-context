@@ -101,7 +101,43 @@ more than the safety.** It is his call, not yours. Do not change this setting.
 
 ---
 
-## 7. ⚠️ The related trap: the Desktop clones are stale
+## 7. ⭐ THE WORKING-COPY RULE — clone fresh, always
+
+**Decided 2026-08-08 by the founder, and it is now how this project works.**
+
+> **GitHub is the only source of truth. There are no persistent local working copies.**
+
+**How to work:**
+```bash
+git clone https://github.com/OTTOYARD/<repo>.git   # fresh, into your own temp dir
+# ... build, test, verify ...
+git push origin hermes/<slug>                       # push the branch
+# ... open the PR, then delete the clone ...
+```
+
+**Why this is the rule.** The founder's own words: *"I don't like code being in two places and
+missing commits because of that."* He is right, and it had already cost real work:
+
+- The Desktop clones drifted **up to 77 commits behind**. The first draft of this entire onboarding
+  package was written from them and was wrong about migration state, branch state, and several
+  "open" defects that were already fixed.
+- Two agent sessions sharing one folder share **one working tree** and clobber each other. That has
+  happened on this project.
+- A stale clone **looks authoritative and isn't.** That is the worst property a file can have.
+
+**What was actually done on 2026-08-08:** the persistent Desktop clones of `ottoyarddepot-sim`,
+`ottoyard-field-ops`, `ottoyard-OTTO-Q`, `ottoq-intelligence`, and the non-git scratch copy
+`depot-sim-motion` were **deleted** (~930 MB), after verifying that every commit in them was
+preserved on GitHub. Six branches that existed **only** on that Desktop — including 198 lines of
+evidence written that same day — were pushed to GitHub first as **`salvage/*`** branches.
+
+**If you find a `salvage/*` branch**, that is what it is: work rescued from a local-only branch
+before the folder was removed. Review it, merge or discard it, then delete the branch.
+
+**Corollary:** never write anything you care about to a path that is not inside a git repo you are
+going to push. And never leave a branch unpushed at the end of a session.
+
+## 8. ⚠️ Why this rule exists: the clones were stale
 
 Discovered while researching the above, and it is arguably more dangerous than the sync itself.
 
