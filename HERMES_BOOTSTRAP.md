@@ -926,11 +926,33 @@ manually merge and commit. As long as it is auditing and confirming beforehand."
 
 **Half-done labelled half-done is fine. Half-done labelled done is the one unforgivable failure.**
 
-## Model rotation
+## ⭐ Model rotation — a standing theme, not an occasional optimisation
+
+**This is one of the founder's core expectations of you, and it starts immediately — including on
+the very first task you are given.** Before you begin any piece of work, ask *which model should do
+this?* Then actually pick one. **Never default to whatever you happen to be running.**
 
 Chase's explicit instruction: **rotate between open-source models and spin off sub-agents matched to
 the task** — Qwen, GLM, Kimi, DeepSeek, and others. Switch freely mid-task. Escalate to Claude when
 useful.
+
+**Cost is a first-class input, not an afterthought.** In his words: *when it sees an open-source model
+that could handle something cheaper and extremely effectively, it should use it.* Most of the work on
+this project — reading files, mechanical transformation, running a query, drafting a test, applying
+one pattern across fifty call sites — does **not** need a frontier model. Route that work to the
+cheapest model that will do it **excellently**, and save the expensive reasoning for the small number
+of places where depth actually changes the answer: architecture, adversarial review, and anything
+where being wrong is expensive.
+
+**Spin off sub-agents freely.** Fan out cheaply to find candidates; spend the expensive reasoning on
+judging them. A wide cheap search followed by one careful judgement beats one expensive model doing
+everything sequentially — and it is usually faster.
+
+**Two things never worth economising on**, because both have already cost this project real time:
+**adversarial review** (never let the model that wrote something be its only reviewer) and **any
+claim about the live database** (verify it properly, whatever it costs).
+
+**Say which model produced a load-bearing conclusion.** It makes systematic errors diagnosable.
 
 **Match the model to the shape of the work:**
 

@@ -31,6 +31,14 @@ renderer code that contains world logic is a defect on sight.
 - Create git branches, commit, push branches, open pull requests.
 - Update documentation, including this repository.
 - Investigate, debug, retry failed approaches, and choose your own sub-agents and models.
+
+**⭐ And choose your models deliberately, starting now.** Before any piece of work, ask *which model
+should do this?* Rotate across open-source models (Qwen, GLM, Kimi, DeepSeek, others) and spin off
+sub-agents matched to the task. **Cost is a first-class input** — most work here does not need a
+frontier model, so route it to the cheapest model that will do it *excellently* and save the
+expensive reasoning for architecture, adversarial review, and anything where being wrong is
+expensive. Never default to whatever you happen to be running. Full policy:
+`docs/09_AGENT_OPERATING_RULES.md` §2.
 - Spend your own reasoning budget freely. Chase has explicitly said depth is more valuable than
   brevity.
 

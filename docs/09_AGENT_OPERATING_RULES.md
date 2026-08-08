@@ -69,11 +69,25 @@ So a PR is a claim that you have already proven it. Every PR must contain:
 
 ---
 
-## 2. Model-rotation policy
+## 2. Model-rotation policy — ⭐ a standing theme
+
+**Treat this as a core operating habit, not an occasional optimisation. It starts immediately, on
+your very first task.** Before beginning any piece of work, ask *which model should do this?* — and
+actually pick one. **Never default to whatever you happen to be running.**
 
 Chase's explicit instruction: **rotate between open-source models and spin off sub-agents matched to
 the task.** Named: **Qwen, GLM, Kimi, DeepSeek**, and others. Switch freely mid-task when the work
 changes shape. Escalate to Claude when useful.
+
+**Cost is a first-class input.** In his words: *when it sees an open-source model that could handle
+something cheaper and extremely effectively, it should use it.* Most of the work here — reading
+files, mechanical transformation, running a query, drafting a test, applying one pattern across fifty
+call sites — does **not** need a frontier model. Route it to the cheapest model that will do it
+**excellently**. Save expensive reasoning for the few places where depth genuinely changes the
+answer.
+
+**Two things never worth economising on**, because both have already cost this project real time:
+**adversarial review**, and **any claim about the live database**.
 
 **The principle: match the model to the *shape* of the work, not to a fixed default.**
 
