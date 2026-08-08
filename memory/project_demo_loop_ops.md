@@ -1,0 +1,24 @@
+---
+name: project_demo_loop_ops
+description: "Operational truths of the enacting demo loop (paced metronome cron + speed control + persistent runs) INCLUDING the 2026-07-16 DB-saturation incident: a 1,113-tick marathon demo run strangled otto-q-core (connection/statement timeouts, cron startup timeouts). Brake = pause the run. Metronome idle-exit patch applied. Doctrine: BOUNDED demo runs, never 30-day marathons."
+metadata:
+  node_type: memory
+  type: project
+  originSessionId: b5cc1e94-2201-451a-a46f-c770df70e99a
+  modified: 2026-07-22T00:15:43.351Z
+---
+
+**The enacting demo loop (how the live demo actually runs):** pg_cron job 12 calls `CALL ottoq_demo_metronome(50)` every minute; the procedure loops for its 50s budget ticking every `ottoq_sim_runs` row with `status='running' AND run_by<>'production_live'`, paced by `demo_speed_x` (6s/tick at 1×; `real_seconds_per_tick=6/speed`), per-tick COMMIT (needed so pg_net async cuOpt/Nemotron calls fire). Job 10 = `ottoq_cron_tick()` (production loop, warns "no running production run" when idle but still averages ~0.6s, max 73s — unexplained heaviness worth a look someday). Controls: `ottoq_start_demo_run(scenario, speed, days, seed)` (starts + supersedes, horizon baked in), `ottoq_set_demo_speed(run, x)` (0.25–5×). Decide path ≈2.8s/tick floor when healthy.
+
+**⚠️ INCIDENT 2026-07-16 (the marathon that strangled the DB):** a persistent `normal_day` demo run (b2522753, 30-day horizon) ran ~2 wall-hours → **1,113 ticks / ~23 sim-days**, growing `ottoq_decisions` to 469k rows / **528 MB** (~98 heavyweight decisions/tick), comms to 192k/221 MB, legs 134k. Result: DB saturation — `SELECT 1` couldn't connect, statement timeouts everywhere, pg_cron "job startup timeout" storms, Supabase's own telemetry queries at 10–33s, metronome invocations observed at **93s** (budget only checked after a tick). Hot tables ARE well-indexed (run-scoped composites + partial live-status indexes verified) — root cause is per-tick cost growth with run age (growth-curve measurement was in progress when this was written; decisions.created_at span per tick_seq bucket is the receipt query).
+
+**Brake + fixes applied:** (1) `UPDATE ottoq_sim_runs SET status='paused'` on the run = instant brake (metronome skips non-running). (2) Migration `metronome_idle_exit_and_budget_guard`: metronome now EXITS immediately when no running demo exists (previously busy-polled 50s/min holding a connection 24/7) and never STARTS a tick past budget. (3) cron.unschedule was classifier-blocked — don't try; pause the run instead.
+
+**DOCTRINE — bounded demo runs:** never leave a multi-day-horizon demo run ticking unattended. A "persistent" demo should be a fresh ~1-sim-day run started on demand, keeping per-run data bounded. Also consider retention/pruning for operator_demo run data (decisions are ~1.1KB each × ~98/tick).
+
+**⭐ RUN LIFECYCLE = A FEATURE (Chase 2026-07-20, corrected me):** the deliberate cycle is **START (fresh random world) → OTTO-Q orchestrates → STOP → pull the Black Box → analyze/optimize → new run.** Do NOT auto-restart runs (I proposed a rolling auto-restart; Chase rejected it) — auto-restart would freeze the fresh Monte Carlo draw AND block the stop-to-pull-data step. Stopping is the trigger, not a failure.
+- **MONTE CARLO PER RUN (built + verified 2026-07-20, migration `montecarlo_fresh_seed_per_run`):** `ottoq_sim_run_scenario` now draws a FRESH random seed `abs(hashtextextended(gen_random_uuid()::text,42))` when `p_seed IS NULL` (was `default_random_seed` → the SAME world every seedless run). So a seedless run = a genuinely fresh realization across ALL calibrated variable streams (weather/arrivals/faults/telemetry/LMP/charger-reliability — all derive from the run's `random_seed`); the variability PROFILE (distribution shape, calibrated per scenario) is unchanged. Explicit `p_seed` still forces deterministic CRN (A/B, certs). The fresh seed is stored in `ottoq_sim_runs.random_seed`, so any interesting run reproduces by passing that seed. VERIFIED: 3 seedless runs → 3 distinct seeds; explicit 12345 → 12345.
+- **STOP → BLACK BOX pull (verified present):** `ottoq_run_blackbox(run)` (full ~24MB bundle), `ottoq_run_blackbox_meta(run)` (~381KB summary), `ottoq_blackbox_latest_run()`; frontend BlackBoxPanel/use-blackbox wires the download. See [[project_blackbox_selfaudit]].
+- **⚠️ HAZARD (tracked, not yet fixed):** `ottoq_start_demo_run` p_days DEFAULT is **30** (a 30-sim-day horizon = the marathon). Operator UI passes days=1 and the metronome 240-tick ceiling caps a runaway at ~5 sim-days, but the default should be 1 for clean bounded ~1-day runs.
+
+Links: [[reference_nvidia_ai_integration]] (demo loop + AI firing), [[reference_live_data_model]] (production cron), [[project_blackbox_selfaudit]], [[project_cards_integration_map]].

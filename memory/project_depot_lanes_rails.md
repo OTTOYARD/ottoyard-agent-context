@@ -1,0 +1,18 @@
+---
+name: project_depot_lanes_rails
+description: "RAILS P2 DONE (2026-07-18): depot right-of-way is now PAINTED in 2D+3D, generated from the same directed LaneGraph the cars route on. Includes Chase's confirmed flow doctrine (charge lanes northbound, avenues two-way divided, enter east/exit west) and the drift bug it fixed."
+metadata:
+  node_type: memory
+  type: project
+  originSessionId: b5cc1e94-2201-451a-a46f-c770df70e99a
+---
+
+**The topology was already right (RAILS P1) — it was just INVISIBLE.** `src/engine/motion/LaneGraph.ts` (`buildDepotLanes()`) is a genuine one-way directed road network: a two-way DIVIDED ring (south blvd y=172, north blvd y=74, west ave x=30, east ave x=275) where both directions exist as directed edges on one centerline and `rightOffset=2.4` shifts each to its own side, so opposing streams **pass beside each other, never head-on**; **one-way NORTHBOUND** gap lanes through the canopy at GAP_LANES x=[80,126.5,173.5,220] (chargers face the wash/service bays); **one-way EASTBOUND rear apron** (R0..R6 at REAR_LANE_Y=16) draining the pull-through bays east — deliberately NOT extended west so the graph can never route a car into the fenced BESS yard. Gates: `ingress→S_in` (EAST, x=200), `S_eg→egress` (WEST, x=100).
+
+**CHASE'S CONFIRMED FLOW DOCTRINE (2026-07-18, he chose all three):** (1) charging lanes stay **ALL NORTHBOUND** (not alternating) — every charging car faces the same way, zero head-on risk, accepts the ring loop-around; (2) perimeter avenues stay **TWO-WAY DIVIDED** (not a one-way loop) — shorter routes, opposing traffic separated to its own side; (3) gates stay **ENTER EAST / EXIT WEST** — arrivals and departures fully separated, entry lands next to the temp staging block. So the built topology == his intended flow; no graph change needed.
+
+**RAILS P2 BUILT + VERIFIED (branch `claude/rails-p2-lane-paint`, pushed — PR: github.com/OTTOYARD/ottoyarddepot-sim/pull/new/claude/rails-p2-lane-paint).** New `src/engine/motion/lanePaint.ts` = pure geometry generator: takes the LaneGraph, reuses `graph.rightOffset`, emits per directed lane a `driveLine` + travel-direction **chevrons placed IN the lane**, **stop bars** at one-way mouths, and ONE **centre stripe** per two-way pair (dedup by sorted pair key). Rendered by `src/components/canvas/LaneOverlay.tsx` (2D SVG, under vehicles) and `src/components/canvas/three/Lanes3D.tsx` (3D ground decals via `toWorld`). Legend: teal chevrons = one-way, grey = two-way side, amber dashes = two-way divider, white bars = stop line. **Because every marking is DERIVED from the graph, painted right-of-way can never drift from routed motion.** VERIFIED live 2D at 1600x900 (teal ∧ up all 4 charge gaps, teal > along the rear apron, grey </> both sides of the boulevards, stop bars at gap mouths); 3D renders the paint with no console errors (camera presets make the chevrons harder to evaluate — worth Chase's eyeball).
+
+**DRIFT BUG THIS FIXED (the real find):** BOTH renderers carried hand-drawn markings that **contradicted the actual rules** — `DepotSVG` drew west-aisle arrows southbound + east-aisle northbound, and `three/DriveAisles.tsx` documented "one-way west (N) / east (S) aisles" — but the graph makes both avenues TWO-WAY. The picture was lying about the traffic rules. Both hand-drawn sets removed; one source of truth now.
+
+**NEXT on lanes:** verify vehicles visually ADHERE to the painted lanes over a long run (RAILS P4 timing/deviation, task #99), optional graph-derived lane EDGE lines to replace the decorative dashes lost with DriveAisles, and speed zones / yield rules at the gap mouths if Chase wants them. Links: [[project_depot_motion_timing_realism]], [[project_depot_ops_model]].
