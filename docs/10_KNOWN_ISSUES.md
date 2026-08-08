@@ -9,23 +9,37 @@ known, what is not, and where to look.
 
 ---
 
+> ## 🚨 CORRECTION NOTICE — 2026-08-08, second pass
+>
+> **The first draft of this register was written against stale local clones** (`otto-q-core` was
+> **77 commits behind** `origin/main`). Re-verified against `origin/main` and the live database.
+> **Migrations now run through 0022, not 0010**, and several items below are RESOLVED rather than
+> open. Corrections are marked inline. **The lesson generalises: always `git fetch` and compare
+> against `origin/main`.** See `docs/17_LOVABLE_AND_SYNC.md` §7.
+
 ## 🔴 P0 — blocks something important
 
-### P0-1 · Migration 0010 (depot layout unification) is authored and must NOT be applied as written
-`memory/project_depot_layout_unification.md` · branches `unify-depot-layout` (otto-q-core),
-`layout-unify-importer` (ottoyarddepot-sim)
+### ✅ P0-1 · ~~Migration 0010 must not be applied as written~~ — **RESOLVED. It was fixed and applied.**
+`memory/project_depot_layout_unification.md`
 
-The apply **halted at preflight, correctly.** The brief said "5 stalls removed, zero references." The
-file actually **retires 19 per depot, and 13 of those carry real booking history.**
-`ottoq_stall_bookings.stall_id` is **ON DELETE CASCADE** ⇒ applying it would **silently vaporise
-ledger rows with no error.**
+**APPLIED 2026-08-06, ledger version `20260806223619`, name `unify_depot_layout`.** The preflight halt
+did its job: the file was rewritten to **re-home rather than retire**, exactly as required.
 
-**Fix required: re-home, never retire.** A stall may only be DELETED if it has zero references across
-all 17 FK columns; otherwise UPDATE it in place.
-⚠️ "Retire in place" (`status='closed'`) does **not** work for L2 — `ottoq_plan_overnight_wave`
-counts `stall_type='l2'` with **no status filter**, so a closed row keeps broadcasting capacity.
+**The renderer's depot is now the database's depot.** Per depot the layout goes **150 → 160 stalls**:
+staging 100 → 115, **l2 35 → 30**, dcfc 10, wash_bay 3, service_bay 2 — applied to **both** depots.
+Every stall was re-plotted onto the real **452.13 × 313.98 ft parcel (3.26 acres)**, replacing the
+360 × 220 ft / 1.82 acre frame the database had recorded. `ottoq_site_structures` and the depots'
+`site_*` fields moved with it. **19 codes leave the layout per depot, of which 14 staging rows are
+RE-HOMED via UPDATE**, not deleted. **Zero routines created, replaced, or dropped.**
 
-Evidence preserved in `preimport_*_20260806` (123 bookings, 300 stalls, 12 structures).
+⚠️ **Note the L2 count fell 35 → 30.** That is the correction of the over-programmed lot (the 5
+appended `L2-STALL-21..25` rows that ran past the end of their own canopy). **Any capacity, charger-
+ratio, or CapEx number computed before 2026-08-06 was computed against 35 L2 stalls that could not
+physically exist.**
+
+**Still true and still worth knowing:** `ottoq_plan_overnight_wave` counts `stall_type='l2'` with
+**no status filter**, so "retire in place" via `status='closed'` would not work for L2. Evidence
+preserved in `preimport_*_20260806`.
 
 ### P0-2 · The deploy transition does not pass through the safety shield
 `memory/reference_ottoq_real_edge.md`
@@ -66,8 +80,25 @@ judging any variability, needs-density, or forecast work.
 - The dispatch-time plan is useless anyway: 0 of 112 arrivals within 5 min; median absolute error
   **68.4 min**, p90 215.5, mean bias **+92.4 min late**.
 - **No function in any schema joins `ottoq_vehicle_needs_card` to `ottoq_approach_band`.**
+- ✅ ~~`ottoq_book_appointment` cannot reserve a bay~~ — **RESOLVED by migration 0011** (applied
+  2026-08-06, `20260806231121`). It now calls `ottoq.ottoq_reserve_inbound_bays` **before** its
+  charge-stall search, so a busy tick with no free charger no longer skips the bay hold.
+  Reservations land in `ottoq_stall_bookings` with `source='return_signal_prearrival'`.
+  🔴 **But those holds still do not BIND — see P1-18. That is now the live problem.**
 
 **You cannot train a forecast on a constant.**
+
+### P0-6 · The wash rotation was never seeded either
+`otto-q-core` MIGRATION_LOG, migration 0018 (applied 2026-08-08)
+
+A second, independent instance of P0-4, found while building the rider-flag recall. The founder's
+rule is that cleaning variability is *"selected and determined at the start of any given simulation
+run. Randomized each time."*
+
+The every-third-night wash gate reads `config.wash_group`, and **all 216 active autonomous vehicles
+already carry one**; the fallback is `abs(hashtextextended(vehicle_id::text, 77)) % 3`.
+**Neither branch involves `random_seed`** ⇒ **the wash rotation was byte-identical in every run ever
+executed.** Addressed in 0018 — **verify the current state rather than assuming either way.**
 
 ---
 
@@ -281,6 +312,62 @@ tie-in mandate.
 
 ---
 
+### P1-18 · Forward bay reservations are written but have NEVER bound ⭐
+`otto-q-core` MIGRATION_LOG rows 0011, 0014, 0015, 0016 · evidence tables `ottoq_bay_binding_witness`,
+`proof0012_binding_blocker`, `p0014_prestop_*`
+
+**This is the sharpest open problem in the forward-scheduling core, and it is a good one.**
+
+Migration 0011 made the return signal reserve service and wash bays ~30 sim-minutes before arrival —
+**15 pre-arrival holds written, 7 of 7 whose vehicle genuinely arrived booked BEFORE arrival, median
+lead 30.8 sim-min.** The mechanism works.
+
+**But no hold has ever reached `active` and `done`.** Final census on the certification run:
+**18 held, 1 released, 0 active, 0 done.**
+
+**The sharpest single piece of evidence** (`proof0012_binding_blocker`, 1 row): booking `49d1c436` is
+the only `return_signal_prearrival` hold whose window opened while its vehicle was actually inside
+the depot — it reserved `NASH-SVC-01` for 14:48–15:25, sim clock 14:52, **inside the window. It did
+not bind.** It was released at 14:52:23 with `release_reason = 'replanned_no_window'` while the
+vehicle sat at `NASH-L2-STALL-29` in state `charging_l2` — i.e. **legitimately upstream in its charge
+leg, exactly where the full-service-visit doctrine says it should be.**
+
+⇒ **Binding is not blocked by run length or tick cost. The replanner gives the bay up instead of
+pushing the hold later.** That is a design question, not a bug hunt.
+
+**Three migrations have already attacked it, and each surfaced a real defect:**
+- **0014** — the proof was unprovable post-hoc, because `vehicles.current_stall_id` is a point-in-time
+  scalar with no history **and the success path renames the evidence.** Added
+  `ottoq_bay_binding_witness` + an AFTER UPDATE trigger stamping old/new state, old/new source, the
+  vehicle's *actual* stall, the window, and **both clock domains** at the instant of transition.
+- **0015** — a ready car now takes a free bay instead of waiting on a forecast. New
+  `ottoq.ottoq_vehicle_bay_ready(run, vehicle, clock)` (TOTAL — any error returns FALSE, and FALSE
+  only ever means "fall back to today's behaviour"). The window gate was **narrowed, not deleted**:
+  `lower(during) <= clock` became `(lower(during) <= clock OR bay_ready(...))`, while
+  `upper(during) > clock` is **untouched**, so a lapsed hold still never seats.
+- **0016** — a car seated by OTTO-Q now carries the twin's service timer (`svc_step`,
+  `service_ends_at` pinned to the booking's own window end), so **its work actually takes as long as
+  it was planned to take.** 0015 made binding real and thereby exposed that latent partial seam.
+
+**What is left:** get one hold to `state='active'` with `vehicles.current_stall_id = booking.stall_id`,
+and then to `done`. Until that happens, the forward calendar reserves bays that nothing sits in.
+
+### P1-19 · The metronome ceiling guard shipped dead, and the pattern will recur
+`otto-q-core` MIGRATION_LOG rows 0012, 0013
+
+0012 added a guard so the metronome stops before `statement_timeout` guillotines it mid-tick. It read
+the deadline with `current_setting('statement_timeout', true)::numeric`.
+
+**`current_setting` returns the GUC *display* form.** On this instance that is `'2min'`, while
+`pg_settings.setting` is `'120000'`. `'2min'::numeric` raises 22P02, the function's own EXCEPTION
+handler set the ceiling to 0, and the guard's `IF` was false on every call. **It was dead code from
+the moment it shipped.** 0013 fixed it by reading `pg_settings.setting`.
+
+> ⭐ **The generalisable rule: `current_setting()` gives you the display string; `pg_settings.setting`
+> gives you the raw value in the GUC's base unit. Never cast the former to a number.**
+
+This is the same family as every other vacuous guard in this codebase. **Prove a guard has fired.**
+
 ## 🟡 P2 — real, lower urgency
 
 | # | Issue | Detail |
@@ -303,6 +390,64 @@ tie-in mandate.
 | P2-16 | **Real MQTT broker** | The comms layer is built to OEM spec (MQTT topics, SAE J2735 BSM, ISO 20078 envelope, J3016/PAS 1886 teleop) and proven round-trip, but emulated in-database. A real broker is the remaining piece. |
 | P2-17 | **`ottoq_sim_auto_dispatch_tick`'s vehicle-pick loop is not depot-scoped** | Only bites under concurrent multi-depot runs, which do not happen today. |
 | P2-18 | **Phantom bookings** | 5 of 108 `otto_q_enacted` bookings had no decision behind them, written by a bay-exit reconciler outside the decision ledger. Driven to 0 in a later phase — **re-verify.** |
+
+---
+
+---
+
+## 🆕 Subsystems that exist but this package originally documented nothing about
+
+Found on the second pass, because the local clones were 77 commits behind. **Read the
+`otto-q-core/MIGRATION_LOG.md` rows for these before touching anything nearby.**
+
+### Rider-flagged cleaning recall — migrations 0018, 0019, 0020 (all applied 2026-08-08)
+
+**This is the "push wake" from the runtime cadence doctrine (D12), now built.** A rider flags a
+vehicle as needing cleaning; OTTO-Q recalls it mid-deployment rather than waiting for its next
+scheduled return.
+
+- **0018** — new table `public.ottoq_rider_cleaning_flags`, 3 new columns on `vehicle_need_profile`,
+  6 policy rows, 3 functions. Also fixed the unseeded wash rotation (see P0-6).
+- **0019** — *"0018 made the recall reach a wash bay. It did not take the car off the road, which is
+  the claim the demo makes."* Measured on 0018's own runs: **9 of 10 flag-linked dispatches were sent
+  out with the flag ALREADY due** (flag age at dispatch 43 → 1,349 min) and recalled one tick later —
+  only **1** was a genuine mid-deployment recall. **2 of 18 flags never fired at all**, because they
+  matured while the vehicle was parked. New `public.ottoq_rider_flag_due` and
+  `ottoq.ottoq_rider_flag_indepot_sweep`; 4 existing routines replaced.
+- **0020** — makes flag consumption and placement atomic. 3 new trigger functions
+  (`ottoq_rider_flag_placement_guard`, `ottoq_rider_flag_mark_served`,
+  `ottoq_reanchor_rider_flags_on_clock_rebase`). **Dropped one constraint** —
+  `ottoq_visit_needs_vehicle_id_visit_key_key`, a **run-blind uniqueness** that was itself the defect
+  — with its exact definition captured verbatim to `public.mig0020_prestate` first. Both replaced
+  function bodies were **md5-guarded against their pre-images**.
+
+### One-vehicle-one-stall — migration 0021 (applied 2026-08-08)
+
+**Found while certifying 0020, not reported by anyone.** Run `0a3c6910` froze at tick 5 and never
+advanced. The metronome kept firing every minute and kept **rolling the entire tick back** on
+`duplicate key value violates unique constraint "idx_stalls_one_vehicle_per_stall"` — **20
+consecutive times.** `tick_count` sat at 5 while `next_tick_due_at` kept moving, **so from the
+outside the run looked alive.**
+
+> *"That is the same failure family as every other defect on this project: motion reported but not
+> earned."*
+
+Located exactly via `PG_EXCEPTION_CONTEXT`: `twin.ottoq_sim_advance_service_flow` line 351, whose
+`WHERE` clause **guards the wrong side of the index.** Fixed by adding
+`public.ottoq_stall_seat_is_exclusive` + a `BEFORE INSERT OR UPDATE OF current_vehicle_id` trigger on
+`stalls`. **This partially addresses E4** — but the backwards index itself still exists.
+
+### Migration 0017 — written, deliberately NOT applied
+
+`0017_stop_is_two_phase_so_a_run_can_always_be_stopped.sql` **replaces the START engine**, and the
+instance was still freezing episodically when it was written, so it could not be tested safely.
+**Leave it alone unless you can certify it.**
+
+### Migration 0022 — applied, but on an unmerged branch
+
+`a_run_owns_its_rows`, version `20260808182226`, on branch `p0022-run-scope-integrity`
+(+3 commits ahead of `origin/main`). *"45 FKs where zero ever exist."*
+**This is the only unmerged branch in any OTTOYARD repo.**
 
 ---
 

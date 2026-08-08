@@ -10,7 +10,17 @@ senior engineer), and any future agent. Written for an AI agent, not a human onb
 **Author:** Claude Code (Opus), which built the large majority of the OTTOYARD codebase between
 April and August 2026, at the direction of Chase Ballenger (founder/CEO).
 
-**Date of this snapshot:** 2026-08-08.
+**Date of this snapshot:** 2026-08-08 (second pass — see the correction notice below).
+
+> 🚨 **Read this before trusting any statement of *state* in this repo.**
+> The first draft was written against local clones that were up to **77 commits behind** their
+> remotes. It was consequently wrong about migration state, branch state, and several "open" defects
+> that were in fact already fixed. Those are corrected and marked ✅ inline.
+> **The rule that came out of it: `git fetch origin` and compare against `origin/main`. Never reason
+> from a local clone.** Full account in [docs/15_UNCERTAINTIES.md](docs/15_UNCERTAINTIES.md) §3c.
+>
+> **Invariants keep; state rots.** The doctrine, architecture, and lessons sections were unaffected —
+> they describe things that do not change. Everything that was wrong was a point-in-time fact.
 
 ---
 
@@ -36,6 +46,7 @@ April and August 2026, at the direction of Chase Ballenger (founder/CEO).
 | 15 | [docs/14_GLOSSARY.md](docs/14_GLOSSARY.md) | Every term and code name. |
 | 16 | [docs/15_UNCERTAINTIES.md](docs/15_UNCERTAINTIES.md) | **What Claude does not know.** Do not treat gaps here as settled. |
 | 17 | [docs/16_FIRST_SESSION_RUNBOOK.md](docs/16_FIRST_SESSION_RUNBOOK.md) | **Concrete commands for your first hour** — how to actually reach the database, two traps that will bite immediately, your first honest run, and a suggested first PR. |
+| 18 | [docs/17_LOVABLE_AND_SYNC.md](docs/17_LOVABLE_AND_SYNC.md) | **How Lovable and GitHub are wired together** (two-way, on `main`, live right now) — and why you must always fetch before reasoning about repo state. |
 
 ---
 

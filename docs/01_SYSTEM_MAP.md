@@ -90,9 +90,13 @@ clone into your own directory.** See `memory/project_parallel_session_tree_colli
 **Primary home: the live database `gxdrcyphqjzjsuhxuqtg`.** Almost all brain logic is PL/pgSQL
 functions. The `otto-q-core` repo mirrors them.
 
-- `otto-q-core/db/migrations/0001..0010_*.sql` — the numbered migration series (the *new*,
-  file-first regime). `0010_unify_depot_layout.sql` is **authored but NOT applied** — see
-  `docs/10_KNOWN_ISSUES.md`.
+- `otto-q-core/db/migrations/0001..0022_*.sql` — the numbered migration series (the *new*,
+  file-first regime). **All applied except `0017_stop_is_two_phase…`, which is deliberately held
+  back** (it replaces the START engine and could not be safely tested). `0022` is applied to the
+  database but still lives on the unmerged branch `p0022-run-scope-integrity`.
+  ⚠️ **Read `otto-q-core/MIGRATION_LOG.md` before anything else in this repo** — it is the single
+  best-written document in the project. One row per change, with the symptom that started it, the
+  objects touched, who applied it, and **the query that proves the behaviour actually moved.**
 - `otto-q-core/db/baseline/` — dumped DDL: `functions_public.sql`, `functions_ottoq.sql`,
   `functions_twin.sql`, `tables.sql`, `rls_policies.sql`, `cron_jobs.sql`. **Read these to
   understand the brain without hitting the DB.**
@@ -205,4 +209,9 @@ functions. The `otto-q-core` repo mirrors them.
 | The pinned demo seed | `424242` (**see the known-issues file — this pin is a defect**) |
 | The main demo scenario | `busy_day` |
 | Fleet size on the flagship | ~116–220 vehicles depending on scenario |
-| Stalls | ~300–320 rows; 10 DCFC, ~35 L2, 3 wash bays, 2 service bays, **0 detail bays**, ~100+ staging |
+| Stalls **(post-0010, per depot)** | **160**: 10 DCFC · **30 L2** · 3 wash bays · 2 service bays · **0 detail bays** · **115 staging** |
+| The real parcel | **452.13 × 313.98 ft = 3.26 acres** (was recorded as 360 × 220 ft / 1.82 ac before 0010) |
+
+⚠️ **L2 fell 35 → 30 in migration 0010** — the correction of five appended stalls that ran past the
+end of their own canopy. **Any capacity, charger-ratio, or CapEx number computed before 2026-08-06
+was computed against 35 L2 stalls that could not physically exist.**

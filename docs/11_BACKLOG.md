@@ -9,6 +9,10 @@ it can decide exactly where it needs to dive into first or where it can be most 
 "it already exists, half-wired" is the correct prior. Two of the biggest planned builds in this
 project's history were cancelled on discovering the thing already existed.
 
+> 🚨 **And `git fetch` first.** This file's first draft was written against local clones that were up
+> to **77 commits behind** `origin/main`, and it was wrong about migration state and branch state as a
+> result. Corrections are marked ✅ inline. **Compare against `origin/main`, never local `main`.**
+
 **Each item is written as: the outcome, why it matters, where to start, and how you will know it
 worked.**
 
@@ -62,11 +66,13 @@ which means the single most defensible idea in the product is not shown to anyon
 Card at rest = owner badge (Pulse only) + current step + progress bar + next step. Click to expand =
 the full sequence, done ✓ / current ▶ / upcoming, with times. **Streamlined, not bulky.**
 
-Backend RPCs are **live and verified**. Branches exist and may be unmerged:
-`ottoyard-field-ops`: `claude/ottoq-vehicle-cards` (base `claude/prime-ops-panel`) ·
-`ottoyard-OTTO-Q`: `claude/ottoq-sequence-cards`.
-
-**Check whether they merged before rebuilding anything.**
+> ✅ **CORRECTION 2026-08-08: both card branches are MERGED.** `ottoyard-field-ops` PR #8
+> (`claude/ottoq-vehicle-cards`) and `ottoyard-OTTO-Q` PR #12 (`claude/ottoq-sequence-cards`) are
+> both in `origin/main`. The first draft of this file said "check whether they merged" because it
+> was written against a clone 10 commits behind.
+> ⇒ **The cards already ship. The remaining work is the tie-in (A1–A3), not the cards themselves.**
+> Pull `origin/main`, look at what is actually rendered, and judge it against Chase's "streamlined,
+> not bulky" bar before adding anything.
 
 Preserve the honesty rules: prune `skipped` legs, scope to the current visit, **omit `deviation_s`**
 (corrupt baseline), atoms key is `'svc'`.
@@ -191,15 +197,25 @@ It is a hardcoded 30-minute constant. **True forward visibility is 30 flat minut
 the vehicle has already decided to come home. D4 requires a horizon long enough to pre-book a
 40-minute brake inspection.
 
-## C4 · Teach `ottoq_book_appointment` to reserve bays
-Its stall search only queries `('dcfc','l2')` then `'staging'` — the strings `wash_bay` and
-`service_bay` **do not appear in it.** Measured: **0 of 110 needs had a bay reserved pre-arrival**
-against 43 bay-requiring atoms.
+## ✅ C4 · ~~Teach `ottoq_book_appointment` to reserve bays~~ — DONE. **The real work is C4b.**
 
-⚠️ **Migration 0011 already did a version of this** (`ottoq_reserve_inbound_bays`,
-`ottoq_book_workflow_legs`, `ottoq_svc_to_stall_type`; 7/7 booked pre-arrival, median lead 30.8
-sim-min). Branch `fwd-bay-reservation-0011`, applied and pushed, **not merged.** Check its state
-before rebuilding.
+**Migration 0011 is applied and merged** (`20260806231121`). `ottoq.ottoq_book_appointment` now calls
+`ottoq.ottoq_reserve_inbound_bays` **before** its charge-stall search, so a busy tick with no free
+charger no longer skips the bay hold. Measured: 15 pre-arrival holds, **7 of 7 arriving vehicles
+booked before arrival, median lead 30.8 sim-min.**
+
+## C4b · Make a forward bay reservation actually BIND ⭐⭐
+**The highest-value single problem in the forward-scheduling core.** See P1-18.
+
+**18 held, 1 released, 0 active, 0 done.** No hold has ever seated. And the sharpest evidence says
+this is a *design* question, not a bug: the one hold whose window opened while its vehicle was inside
+the depot was released `replanned_no_window` while that vehicle sat legitimately upstream in its
+charge leg. **The replanner gives the bay up instead of pushing the hold later.**
+
+Three migrations have already attacked it and each surfaced a real defect (0014 witness table, 0015
+early activation, 0016 service timer). **The finish line is precise:** one hold reaching
+`state='active'` with `vehicles.current_stall_id = booking.stall_id`, and then `done`.
+
 ⚠️ **Anchor on the LIVE ETA, not `planned_return_at`** — median divergence −114.9 min.
 ⚠️ **`service_cadence_policy.lane` is the live requirement column**, not `service_definitions`
 (which shares 1 of 15 atom names and requires a `detail_bay` that does not exist).
@@ -398,7 +414,7 @@ early-recalled vehicle can use a cheap slow charger all night; a late one *requi
 | H4 | **Retire or repoint `ottoq-progress`** | Orphaned on dead `vehicle_schedules`/`schedule_tasks`. |
 | H5 | **Wire or retire `ottoq_recommendations`** | 83,812 rows, **zero** ever executed. |
 | H6 | **Elastic IP for the Isaac box** | Removes the `localStorage` IP-override dance. |
-| H7 | **Merge or close the stale branches** | Several carry real work: `fwd-bay-reservation-0011`, `fwd2-inspection-condition-resets`, `claude/ottoq-vehicle-cards`, `claude/ottoq-sequence-cards`, `claude/prime-ops-panel`, `claude/blackbox-panel`, `unify-depot-layout`, `layout-unify-importer`. **Inventory these first — several backlog items may already be done on a branch.** |
+| H7 | ✅ ~~**Merge or close the stale branches**~~ | **CORRECTED 2026-08-08: they are all already merged.** Verified with `git rev-list --count origin/main..origin/<branch>` = 0 for every branch in every repo, including `fwd-bay-reservation-0011`, `unify-depot-layout`, `fwd2-inspection-condition-resets`, and both card branches. **Exactly one unmerged branch exists anywhere: `otto-q-core/p0022-run-scope-integrity` (+3), carrying migration 0022 `a_run_owns_its_rows` — already applied to the database at version `20260808182226`.** Remaining hygiene: delete the ~20 merged remote branches in `otto-q-core`, and get 0022 merged so the file record matches the database. |
 | H8 | **Re-verify `OTTOQ-TWIN-BOUNDARY.md` is on `main`** | It was one branch deletion from gone. |
 | H9 | **Full UI audit against OTTOYARD branding** | Standing founder want. Tokens are in `04_ORCHESTRA_AND_PULSE.md` §5. Both apps still use generic shadcn themes. **"No lazy UI."** |
 | H10 | **A real MQTT broker** | The comms layer is OEM-spec and proven round-trip but emulated in-database. |

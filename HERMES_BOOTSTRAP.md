@@ -32,14 +32,28 @@ actually reach the database), then the rest of the numbered docs in `docs/`. It 
 `memory/` — **79 verbatim memory files** written by Claude across four months of building this
 system. Those are the primary sources; `docs/` is synthesis on top of them.
 
-**Two traps that will bite you in the first ten minutes if you do not know them:**
-1. **`OTTOYARD` on GitHub is a personal account, not an organization.** Everyone calls it "the org."
+**Three traps that will bite you in the first ten minutes if you do not know them:**
+
+1. 🚨 **`git fetch` before you reason about anything.** The local clones on the founder's Desktop are
+   badly stale — `otto-q-core` was **77 commits behind** its remote. **The first draft of this very
+   package was written from them and was wrong about migration state, branch state, and several
+   "open" defects that were already fixed.** Always compare against `origin/main`, never local
+   `main`, and never treat a branch's continued existence as evidence it is unmerged
+   (`git rev-list --count origin/main..origin/<branch>` — 0 means merged).
+2. **`OTTOYARD` on GitHub is a personal account, not an organization.** Everyone calls it "the org."
    `/orgs/OTTOYARD/...` API calls **404**. Use `/user/repos`.
-2. **Every `supabase/config.toml` in every repo points at the wrong project** — dead refs
+3. **Every `supabase/config.toml` in every repo points at the wrong project** — dead refs
    (`hfjaofyfxsyniohdfacg`, `odhpbdhnpcrjeaxvbrzd`), OrchestrAV's legacy DB (`ycsis`), or a
    placeholder. **The real core `gxdrcyphqjzjsuhxuqtg` appears in none of them** — it is hardcoded in
    client code. **Any Supabase CLI command that writes will target the wrong project unless you pass
    `--project-ref gxdrcyphqjzjsuhxuqtg` explicitly.**
+
+**And one thing about how this repo is shared with a human:** the three front-end repos are wired to
+**Lovable** with **two-way sync on `main`.** When Chase edits in Lovable it commits **straight to
+`main`** (as `gpt-engineer-app[bot]`); when you merge a PR into `main`, **Lovable pulls it back
+automatically.** It has already pushed on top of Claude's work. It will not silently clobber you —
+Lovable diverts to a `lovable-sync-<timestamp>` branch when it cannot rebase — but **`main` is not
+yours alone.** Full mechanics in `docs/17_LOVABLE_AND_SYNC.md`.
 
 **Keep the context repo open while you work.** Re-read the relevant doc before touching a subsystem
 you have not touched before. And when you learn something durable, **add it there and open a PR** —

@@ -12,9 +12,9 @@ anything you are uncertain about rather than inventing information.** This is th
 | # | Unknown | Why it matters | How to resolve |
 |---|---|---|---|
 | U1 | **Where seed `424242` is pinned.** | Until found, every run is identical and no variability work can be judged. | Grep every caller of `ottoq_start_demo_run` / `ottoq_start_busy_run` across the DB, the edge functions, and all three front ends. Check the operator console defaults and any cron/harness. |
-| U2 | **Whether the branches listed in `11_BACKLOG.md` H7 are merged.** | Several backlog items may already be done. | `git branch -a` per repo and compare against `main`. |
+| ✅ U2 | ~~Whether the branches in H7 are merged.~~ | **RESOLVED: they all are.** Exactly one unmerged branch exists in any OTTOYARD repo — `otto-q-core/p0022-run-scope-integrity`. | Verified `git rev-list --count origin/main..origin/<branch>` = 0 for every branch. |
 | U3 | **Whether `docs/OTTOQ-TWIN-BOUNDARY.md` is on `main`** in `ottoyarddepot-sim`. | It was previously one branch deletion from gone. It exists on the local clone; I did not confirm the branch. | `git log main -- docs/OTTOQ-TWIN-BOUNDARY.md` |
-| U4 | **What migration `20260808182226` did.** | It was applied to production **today**, after my last full inventory. Someone (a parallel session, or Chase) changed the brain. | `select * from supabase_migrations.schema_migrations where version = '20260808182226';` |
+| ✅ U4 | ~~What migration `20260808182226` did.~~ | **RESOLVED: it is `a_run_owns_its_rows`** — migration **0022**, *"45 FKs where zero ever exist"*, applied by a parallel Claude session. It lives on the unmerged branch `p0022-run-scope-integrity`. | Read `otto-q-core/db/migrations/0022_*.sql` on that branch. |
 | U5 | **The current live state of the AI enactment path.** | The cuOpt share figures span 2.8% → 42.4% → 18%, and P0-3 (dispatch discarding the AI's choice) may or may not still hold. | Run a `busy_day` run of ≥139 sim-min, stop it, then group `ottoq_decisions` by `proposed_action->>'source'`. |
 | U6 | **Whether the refusal path now fires** (P1-11). | The pre-flight work should have changed this; I did not re-measure. | `select status, confirmed_by, count(*) from ottoq_vehicle_commands group by 1,2;` |
 | U7 | **Whether the phantom-booking count is still 0** (P2-18). | It was 5 of 108, then 0 of 211. Phases moved. | `ottoq_booking_provenance_audit(run)` on a fresh run. |
@@ -67,6 +67,34 @@ I re-checked the package's own claims before publishing. Three were wrong or mis
 **What that audit did not cover, and you should treat as still open:** I did not re-read every file
 for internal consistency, and I did not verify every `file:line` citation inherited from the memory
 corpus. **Assume citations are directionally right and specifically stale.**
+
+## 3c. The second audit pass — and the mistake that produced the biggest correction
+
+**2026-08-08, after the first publish.** I researched the open Lovable question and, in doing so,
+discovered something worse than the question itself.
+
+**Every local clone under `~/Desktop/OTTOYARD/` was behind its remote.** `otto-q-core` was **77
+commits behind.** I had inventoried migrations, branch state, and open defects **from those stale
+clones**, comparing against local `main` instead of `origin/main`.
+
+**What that made wrong:**
+
+| I wrote | Truth |
+|---|---|
+| "Migrations run 0001–0010" | **0001–0022.** Twelve migrations I documented nothing about. |
+| "0010 is authored and must not be applied" | **0010 was fixed and APPLIED** on 2026-08-06 (`20260806223619`), re-homing rather than retiring. The depot is now 160 stalls on the real 3.26-acre parcel. |
+| "`book_appointment` cannot reserve bays" | **Fixed by 0011**, applied 2026-08-06. |
+| "Vehicle-card branches may be unmerged" | **Both merged** (field-ops #8, OTTO-Q #12). |
+| "Eight stale branches to inventory" | **All merged.** Exactly one unmerged branch exists anywhere. |
+| "Unknown migration `20260808182226`" | **0022 `a_run_owns_its_rows`.** |
+
+**Nothing in the doctrine, architecture, or lessons sections was affected** — those describe
+invariants, which is exactly why they were written that way. **Everything that was wrong was a
+point-in-time fact about state.** That distinction is worth carrying: *invariants keep, state rots.*
+
+> ⇒ **The rule this earned, now in `docs/17_LOVABLE_AND_SYNC.md` §7: `git fetch origin` and compare
+> against `origin/main`. Never reason from a local clone. Never trust a branch's continued existence
+> as evidence it is unmerged.**
 
 ## 4. Things I am confident about but you should still spot-check
 
