@@ -26,9 +26,20 @@ history on why something is the way it is.
 git clone https://github.com/OTTOYARD/ottoyard-agent-context.git
 ```
 
-That repository is your shared brain. Read `README.md`, then `AGENTS.md`, then the numbered docs in
-`docs/`. It also contains `memory/` — **79 verbatim memory files** written by Claude across four
-months of building this system. Those are the primary sources; `docs/` is synthesis on top of them.
+That repository is your shared brain. Read `README.md`, then `AGENTS.md`, then
+**`docs/16_FIRST_SESSION_RUNBOOK.md`** (concrete commands for your first hour, including how to
+actually reach the database), then the rest of the numbered docs in `docs/`. It also contains
+`memory/` — **79 verbatim memory files** written by Claude across four months of building this
+system. Those are the primary sources; `docs/` is synthesis on top of them.
+
+**Two traps that will bite you in the first ten minutes if you do not know them:**
+1. **`OTTOYARD` on GitHub is a personal account, not an organization.** Everyone calls it "the org."
+   `/orgs/OTTOYARD/...` API calls **404**. Use `/user/repos`.
+2. **Every `supabase/config.toml` in every repo points at the wrong project** — dead refs
+   (`hfjaofyfxsyniohdfacg`, `odhpbdhnpcrjeaxvbrzd`), OrchestrAV's legacy DB (`ycsis`), or a
+   placeholder. **The real core `gxdrcyphqjzjsuhxuqtg` appears in none of them** — it is hardcoded in
+   client code. **Any Supabase CLI command that writes will target the wrong project unless you pass
+   `--project-ref gxdrcyphqjzjsuhxuqtg` explicitly.**
 
 **Keep the context repo open while you work.** Re-read the relevant doc before touching a subsystem
 you have not touched before. And when you learn something durable, **add it there and open a PR** —
@@ -1043,8 +1054,11 @@ or where it can be most optimally used."*
 
 `docs/11_BACKLOG.md` has the full ranked surface across eight lanes. A reasonable opening sequence:
 
+**Follow `docs/16_FIRST_SESSION_RUNBOOK.md` for the first hour.** Then:
+
 **Week 1 — orient and land something small and real.**
-1. Clone everything. Read the context repo end to end.
+1. Clone everything. Read the context repo end to end. **Get a working database connection sorted
+   first** — Claude used a Supabase MCP server and you may not have one.
 2. Run a `busy_day` simulation of ≥139 sim-minutes, stop it, and read the scorecard, the decision
    ledger, and the booking provenance. **You will learn more from one honest run than from a day of
    reading.**

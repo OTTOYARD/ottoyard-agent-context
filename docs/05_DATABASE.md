@@ -17,6 +17,19 @@ Everything below is verified against the live `gxdrcyphqjzjsuhxuqtg` instance on
 | Cron jobs | 5 (4 active) |
 | Extensions in use | PostGIS, pg_cron, pg_net, pg_stat_statements |
 
+## 1b. How to actually connect
+
+**Claude reached this database through a Supabase MCP server. You may not have one.** The options,
+and how to ask for what you need, are in `docs/16_FIRST_SESSION_RUNBOOK.md` §1. Two things to know
+now:
+
+- **PostgREST only exposes `public`.** The `ottoq` and `twin` schemas are deliberately invisible to
+  it, and `anon` has no USAGE on either. That is a security feature.
+- 🚨 **Every `supabase/config.toml` in every repo points at the wrong project** — dead refs
+  (`hfjaofyfxsyniohdfacg`, `odhpbdhnpcrjeaxvbrzd`), OrchestrAV's legacy DB (`ycsis`), or a
+  placeholder. **`gxdrcyphqjzjsuhxuqtg` appears in none of them.** Always pass
+  `--project-ref gxdrcyphqjzjsuhxuqtg` explicitly to any CLI command that writes.
+
 ## 2. Schema layout
 
 | Schema | Contains | Reachable by `anon`? |

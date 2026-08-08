@@ -54,6 +54,20 @@ These were put to Chase and, as far as the record shows, not resolved.
 
 ---
 
+## 3b. Found by auditing this package against itself (2026-08-08)
+
+I re-checked the package's own claims before publishing. Three were wrong or missing:
+
+| Finding | Resolution |
+|---|---|
+| **I wrote "GitHub org `OTTOYARD`" throughout.** It is a **personal account**. `/orgs/OTTOYARD/repos` returns 404; `/user/repos` works. | Corrected in `01`, `09`, `12`, the bootstrap, and documented in `16` §0. |
+| **Every `supabase/config.toml` in every repo points at the wrong project** — and I had not said so anywhere. `gxdrcyphqjzjsuhxuqtg` appears in **none** of them. | Documented in `01`, `05` §1b, `16` §0, and the bootstrap. **This is the single most likely cause of a destructive mistake by a new agent.** |
+| **I never said how to actually connect to the database.** Claude used a Supabase MCP server; a cloud agent may not have one, and the Supabase CLI is not installed on the founder's machine. | `16` §1 now lays out four options and what to ask for. |
+
+**What that audit did not cover, and you should treat as still open:** I did not re-read every file
+for internal consistency, and I did not verify every `file:line` citation inherited from the memory
+corpus. **Assume citations are directionally right and specifically stale.**
+
 ## 4. Things I am confident about but you should still spot-check
 
 Because they are load-bearing, and because this project's history is full of confident-and-wrong.

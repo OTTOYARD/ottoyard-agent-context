@@ -41,11 +41,26 @@ lives in `otto-q-core`. Read `memory/project_architecture_separation.md` before 
 `ottoq_vehicles`, `ottoq_resources` etc. **They are different systems with the same names.** Always
 confirm which project ref a client points at before reasoning about a table.
 
+> 🚨 **AND THE BIGGER TRAP: every `supabase/config.toml` in every repo points at the WRONG project.**
+> Measured across all clones, the `project_id` values found are `hfjaofyfxsyniohdfacg` (**does not
+> exist**), `odhpbdhnpcrjeaxvbrzd` (**dead**), `ycsisvozzgmisboumfqc` (real, but that is OrchestrAV's
+> legacy DB), and the placeholder string `OTTO-Q_V1`.
+> **`gxdrcyphqjzjsuhxuqtg` — the real core — appears in none of them.** It is hardcoded in client
+> code instead (`src/lib/supabase.ts`, `src/lib/ottoTwin.ts`, `src/lib/otto-q-api.ts`).
+> ⇒ **Any Supabase CLI command that writes will target the wrong project unless you pass
+> `--project-ref gxdrcyphqjzjsuhxuqtg` explicitly.** Do not "fix" the config files without telling
+> Chase — the edge functions genuinely deploy to `gxdrc`, so a changed linked ref has deployment
+> consequences.
+
 ---
 
-## 3. GitHub repositories (org `OTTOYARD`)
+## 3. GitHub repositories (account `OTTOYARD`)
 
 All under `https://github.com/OTTOYARD/`. Default branch is `main` on all of them.
+
+⚠️ **`OTTOYARD` is a personal GitHub account, not an organization.** Everyone calls it "the org" in
+conversation, which is harmless in prose and a 404 in an API call — use `/user/repos`, never
+`/orgs/OTTOYARD/repos`.
 
 | Repo | Private | What it is | Local clone |
 |---|---|---|---|

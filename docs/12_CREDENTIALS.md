@@ -18,7 +18,7 @@ These are public identifiers, not secrets.
 | OrchestrAV legacy project ref | `ycsisvozzgmisboumfqc` ("OTTOYARD MVP", us-east-2) |
 | Abandoned project ref | `sovyxwtrqfmizelrammm` ("Fleet Dashboard", INACTIVE) |
 | ⚠️ Dead reference | `hfjaofyfxsyniohdfacg` — **does not exist.** If you find it in a config, it is stale. |
-| GitHub org | `https://github.com/OTTOYARD` |
+| GitHub account | `https://github.com/OTTOYARD` — ⚠️ a **personal account, not an organization**. Use `/user/repos`, not `/orgs/OTTOYARD/repos` (that 404s). |
 | Edge function base | `https://gxdrcyphqjzjsuhxuqtg.supabase.co/functions/v1/` |
 | API gateway | `/functions/v1/otto-q-api/api/v1/...` |
 | Flagship depot id | `11111111-1111-1111-1111-111111111111` |

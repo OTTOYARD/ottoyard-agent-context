@@ -10,7 +10,9 @@ whenever you are about to do something you have not done before.
 ### You may do all of this without asking
 
 **Read**
-- Every repository in the `OTTOYARD` GitHub org, including private ones.
+- Every repository under the `OTTOYARD` GitHub account, including private ones. ⚠️ It is a
+  **personal account, not an organization** — `/orgs/OTTOYARD/...` API calls 404. See
+  `docs/16_FIRST_SESSION_RUNBOOK.md` §0.
 - The full Supabase schema, function bodies, migration history, logs, advisors.
 - Git history, branches, unmerged work, PRs.
 - Every file in this context repository.

@@ -35,6 +35,7 @@ April and August 2026, at the direction of Chase Ballenger (founder/CEO).
 | 14 | [docs/13_HISTORY_AND_LESSONS.md](docs/13_HISTORY_AND_LESSONS.md) | Incidents and the rules they produced. Reading this prevents repeating a week of pain. |
 | 15 | [docs/14_GLOSSARY.md](docs/14_GLOSSARY.md) | Every term and code name. |
 | 16 | [docs/15_UNCERTAINTIES.md](docs/15_UNCERTAINTIES.md) | **What Claude does not know.** Do not treat gaps here as settled. |
+| 17 | [docs/16_FIRST_SESSION_RUNBOOK.md](docs/16_FIRST_SESSION_RUNBOOK.md) | **Concrete commands for your first hour** — how to actually reach the database, two traps that will bite immediately, your first honest run, and a suggested first PR. |
 
 ---
 
