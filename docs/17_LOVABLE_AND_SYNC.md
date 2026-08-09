@@ -111,7 +111,7 @@ more than the safety.** It is his call, not yours. Do not change this setting.
 ```bash
 git clone https://github.com/OTTOYARD/<repo>.git   # fresh, into your own temp dir
 # ... build, test, verify ...
-git push origin hermes/<slug>                       # push the branch
+git push origin hermes/<lane>/<slug>                       # push the branch
 # ... open the PR, then delete the clone ...
 ```
 

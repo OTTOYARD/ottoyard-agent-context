@@ -42,7 +42,7 @@ whenever you are about to do something you have not done before.
 | **Any `DROP`, `TRUNCATE`, or `DELETE FROM` in production** | `ottoq_stall_bookings.stall_id` is ON DELETE CASCADE; a migration nearly vaporised the booking ledger silently. |
 | **Deploying an edge function to production** | It is live immediately, with no review gate. |
 | **Disabling or weakening RLS, auth, or a safety rule** | 31 tables were once world-writable. Never go backwards. |
-| **Disabling cron job 12** (`ottoq-demo-metronome`) | It **is** the run engine. Disabling it silently stops every simulation while everything looks green. |
+| **Disabling OR modifying cron job 12** (`ottoq-demo-metronome`) | It **is** the run engine. Disabling it silently stops every simulation while everything looks green. Modification (including cadence changes) also requires founder approval — see `docs/18_FLEET_COORDINATION.md` §3. |
 | **Rotating, printing, or committing any credential** | See `12_CREDENTIALS.md`. |
 | **Deleting a git branch holding unmerged work** | The twin/OTTO-Q boundary doc lived on one such branch and was one deletion from gone. |
 | **Anything that materially increases spend** | cuOpt solves, Nemotron calls, the AWS g6e box, database headroom. |
