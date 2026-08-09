@@ -172,19 +172,14 @@ no hotspot).
 units). PR #61 aligned CAR_LENGTH from 9→10.2. All three car lengths now agree: 2D=10.2u, 3D=10.2u,
 physics=10.2u. Fixture test confirms stuck samples dropped 130→73 (44%).
 
-### P1-7 · The geometry guard has four holes
+### 🟡 P1-7 · The geometry guard — partially resolved
 `memory/project_depot_layout_unification.md`
 
-1. **NULL handling** (fixed) — Postgres `LEAST`/`GREATEST` skip NULLs, so 5 dimensionless bays
-   inherited their comparand's edges and produced **725 phantom overlaps** (779 instead of 54). The
-   JS twin had the mirror bug (`null/2 = 0` ⇒ zero-area point) and printed **"PASS: zero overlapping
-   pairs"** *plus* advice to delete all five founder exemptions as stale.
-2. **The fence check silently skips depot 2** — it INNER JOINs one `FENCE-PERIMETER` row that only
-   exists for depot 1, so depot 2 contributes nothing and **passes unearned.**
-3. **No aisle check on the DB side at all** — aisle width is measured only source-side in the JS
-   guard.
-4. **No stall-vs-LANE clearance check** — which is exactly why P1-5 exists. **The guard would have
-   blessed it forever.**
+**Partially fixed 2026-08-09 (migration 0031).** Two DB-side checks now live:
+- `ottoq_check_fence_containment()` — verifies every stall within its depot perimeter. 0 failures on both depots.
+- `ottoq_check_stall_overlap()` — detects same-heading stalls closer than 5ft. 0 failures on both depots.
+
+**Still open:** No stall-vs-lane clearance check (hole #4 — what would have caught P1-5). The JS guard has this but the DB does not. Lanes aren't stored as DB structures, making this hard to SQL-ify. The JS guard (`checkLayoutGeometry.mjs`) remains the primary lane clearance validator.
 
 ### P1-8 · The `ottoq_fleet_operator_slas` table is empty
 `memory/project_appointment_depot_doctrine.md`
