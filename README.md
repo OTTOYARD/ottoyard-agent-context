@@ -47,6 +47,7 @@ April and August 2026, at the direction of Chase Ballenger (founder/CEO).
 | 16 | [docs/15_UNCERTAINTIES.md](docs/15_UNCERTAINTIES.md) | **What Claude does not know.** Do not treat gaps here as settled. |
 | 17 | [docs/16_FIRST_SESSION_RUNBOOK.md](docs/16_FIRST_SESSION_RUNBOOK.md) | **Concrete commands for your first hour** — how to actually reach the database, two traps that will bite immediately, your first honest run, and a suggested first PR. |
 | 18 | [docs/17_LOVABLE_AND_SYNC.md](docs/17_LOVABLE_AND_SYNC.md) | **How Lovable and GitHub are wired together** (two-way, on `main`, live right now) — and why you must always fetch before reasoning about repo state. |
+| 19 | [docs/18_FLEET_COORDINATION.md](docs/18_FLEET_COORDINATION.md) | **The fleet traffic law** — lanes, the task pipeline (graph), the claim board, database traffic rules, the four Telegram message types, and the model-routing tiers. Binding on every agent. |
 
 ---
 
