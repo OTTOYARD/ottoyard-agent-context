@@ -181,23 +181,15 @@ physics=10.2u. Fixture test confirms stuck samples dropped 130→73 (44%).
 
 **Still open:** No stall-vs-lane clearance check (hole #4 — what would have caught P1-5). The JS guard has this but the DB does not. Lanes aren't stored as DB structures, making this hard to SQL-ify. The JS guard (`checkLayoutGeometry.mjs`) remains the primary lane clearance validator.
 
-### P1-8 · The `ottoq_fleet_operator_slas` table is empty
+### ✅ P1-8 · The `ottoq_fleet_operator_slas` table — RESOLVED
 `memory/project_appointment_depot_doctrine.md`
 
-Chase's ruling: the 80% deploy floor must be a real **per-operator SLA**. The table is empty, so
-every "80" in the proposer, the manifest generator, and shield rule SLA.001 is an **undefended
-hardcoded fallback.**
+**Resolved 2026-07-19.** Table seeded with 4 active SLA contracts (WAYMON, TESLAR, ZOOXSO, LOCALE). Each carries per-operator deploy floor, charge targets, queue limits, and required services. Six evaluation functions (`ottoq_eval_sla_001`—`006`) read live SLA values. The 80% deploy floor is no longer an undefended hardcode.
 
-### P1-9 · Reservation TTL is decorative
+### ✅ P1-9 · Reservation TTL — RESOLVED
 `memory/project_forward_availability_doctrine.md`
 
-`stalls.reserved_by` / `reservation_expires_at` are honoured **lazily at claim time** by 13+
-functions — but nothing garbage-collects them.
-⚠️ **Three functions read `reserved_by IS NULL` WITHOUT the expiry guard** and therefore **under-count
-free capacity**: `ottoq_cuopt_refresh`, `ottoq_report_charger_fault` (this starves fault recovery —
-only 10 of 17 free DCFC visible), and `ottoq_reoptimize_reservation_book`.
-⚠️ The executor's vacate does **not** clear `reserved_by` / `reservation_expires_at` — a capacity
-leak that reads as phantom scarcity.
+**Resolved 2026-08-09 (migration 0033).** `ottoq_gc_stale_reservations()` garbage-collects expired and orphaned reservations. 54 stale reservations from July 28 cleared. Capacity counting now accurate.
 
 ### P1-10 · Rule 1 (OTTO-Q never writes world state) is not enforced
 `memory/project_ottoq_twin_boundary.md`
