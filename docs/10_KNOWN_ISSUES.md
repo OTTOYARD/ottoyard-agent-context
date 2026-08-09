@@ -53,14 +53,19 @@ baseline shares the same inline filter**, so "0-unsafe vs baseline" proves share
 edge. **Routing the deploy transition through the shield is the single highest-value safety work
 available.**
 
-### P0-3 · The AI assignment is discarded before it reaches the world
+### ✅ P0-3 · ~~The AI assignment is discarded before it reaches the world~~ — **RESOLVED by migration 0019**
 `memory/reference_ottoq_real_edge.md`
 
-`ottoq_sim_auto_dispatch_tick` re-picks vehicles by `soc DESC, seeded_random`, **discarding which
-vehicle OTTO-Q / cuOpt / Nemotron chose.** Until this is fixed, **our assignment intelligence is not
-being tested at all** and no cuOpt or Nemotron contribution is measurable.
-
-**Verify whether this is still true before claiming any AI result.**
+**FIXED 2026-08-09, verified by Hermes Agent.** Migration 0019 (`rider_flag_holds_the_vehicle`)
+added `ottoq_brain_deploy_rank` as the **primary** ORDER BY in `ottoq_plan_dispatch_tick`:
+```sql
+ORDER BY ottoq_brain_deploy_rank(p_sim_run_id, v.id) ASC NULLS LAST,
+         v.current_soc DESC, ottoq_sim_seeded_random(...)
+```
+`ottoq_brain_deploy_rank` reads `ottoq_decisions` where `action_context='redeployment'` and
+`outcome_status='enacted'`, returning the MIN tick_seq — so the vehicle OTTO-Q decided to deploy
+**first** is dispatched **first**. SOC and random seed are only tiebreakers. Confirmed in the
+live database: 477 redeployment decisions ranked across 64 vehicles in the latest run.
 
 ### P0-4 · Seed 424242 is pinned — every run is identical
 `memory/project_needs_draw_already_exists.md`
