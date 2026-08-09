@@ -146,15 +146,13 @@ Appears in `ottoq_decide_tick` (×2, ~lines 165/217), `ottoq_book_appointment:11
 consuming the 24-spot quick-turnaround buffer before spilling to the 176 perimeter spots where it
 belongs. **The sort encodes capacity overflow; the doctrine wants purpose.**
 
-### P1-4 · cuOpt supply starvation — availability counts dead calendar rows
+### ✅ P1-4 · ~~cuOpt supply starvation~~ — **RESOLVED (2026-08-03 fix)**
 `memory/project_orchestration_build_2026_08_01.md`
 
-`free_stalls_in = 0` on **48 of 83** edge calls (57.8%) while L2 utilisation was only 39.7% — **~27
-chargers were physically free while cuOpt was told there were none.** The availability predicate
-counts `released`/`superseded` rows (**86% of the calendar**), which still carry full ~23-minute
-windows.
-
-**Fix: availability must consider only `state IN ('held','active','done')`.**
+**FIXED 2026-08-03.** `ottoq_stall_free_between` now filters
+`b.state IN ('held','active','done','interrupted')` — `released` and `superseded` are excluded
+from availability. Verified 2026-08-09: 0 interrupted bookings in certified runs, so the
+`interrupted` inclusion has zero practical impact. 
 
 cuOpt share has since oscillated 42.4% → 36.4% → 18.0% raw / 28.8% like-for-like. **Conversion is
 healthy (86.7–100%); supply is the bottleneck.** Suspect a newer path (`inspect_seam` /
