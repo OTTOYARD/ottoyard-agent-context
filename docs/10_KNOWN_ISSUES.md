@@ -168,16 +168,12 @@ Migration 0027 applied. Verified with live simulation: 25/25 stalls occupied nor
 bookings. Clearance went from −0.9u to +3.85u. Mirrors the west avenue pattern (4.1u clearance,
 no hotspot).
 
-### P1-6 · Four different cars exist
+### ✅ P1-6 · ~~Four different cars exist~~ — **RESOLVED (PR #60, #61)**
 `memory/reference_depot_plan_scale.md`
 
-- 2D body `4.2 × 10.2 u` — correct.
-- 3D `Vehicle3D` `BoxGeometry(2.2, 0.85, 4.9)` — **authored in metres, dropped into unit-space**, so
-  it renders at ~48%: a toy car. Cheap fix: uniform group scale ≈ 2.0.
-- Physics `traffic.ts CAR_LENGTH = 9` (4.31 m) — a third length used by IDM car-following.
-
-⚠️ Changing `rightOffset` or `CAR_LENGTH` moves routed motion — **that needs a certified pass, not a
-drive-by edit.**
+**FIXED 2026-08-09 by Hermes Agent.** PR #60 scaled 3D car geometry 2.08× to match 2D (10.2 plan
+units). PR #61 aligned CAR_LENGTH from 9→10.2. All three car lengths now agree: 2D=10.2u, 3D=10.2u,
+physics=10.2u. Fixture test confirms stuck samples dropped 130→73 (44%).
 
 ### P1-7 · The geometry guard has four holes
 `memory/project_depot_layout_unification.md`
