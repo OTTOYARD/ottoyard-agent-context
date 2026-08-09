@@ -96,14 +96,11 @@ judging any variability, needs-density, or forecast work.
 ### P0-6 · The wash rotation was never seeded either
 `otto-q-core` MIGRATION_LOG, migration 0018 (applied 2026-08-08)
 
-A second, independent instance of P0-4, found while building the rider-flag recall. The founder's
-rule is that cleaning variability is *"selected and determined at the start of any given simulation
-run. Randomized each time."*
-
-The every-third-night wash gate reads `config.wash_group`, and **all 216 active autonomous vehicles
-already carry one**; the fallback is `abs(hashtextextended(vehicle_id::text, 77)) % 3`.
-**Neither branch involves `random_seed`** ⇒ **the wash rotation was byte-identical in every run ever
-executed.** Addressed in 0018 — **verify the current state rather than assuming either way.**
+**FIXED 2026-08-09 by Hermes Agent (migration 0028).** `ottoq_sim_seed_wash_variables` now assigns
+`wash_group` using `ottoq_sim_seeded_random(v_seed, 'wash_group:'||id::text) % 3` — fresh rotation
+per run. `cycles_since_wash` drawn from 0-8 distribution. `soil_index` already per-run random via
+`ottoq_twin_climate_stress`. Confirmed: 12 exterior wash atoms generated in a night-timed demo run.
+Three wash bays no longer permanently idle.
 
 ---
 
