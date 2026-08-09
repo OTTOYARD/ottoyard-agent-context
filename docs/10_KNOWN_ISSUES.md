@@ -159,16 +159,14 @@ healthy (86.7–100%); supply is the bottleneck.** Suspect a newer path (`inspec
 `gate_intake_staging`) pre-empting cuOpt's candidates — the same sequencing family as the original
 defect.
 
-### P1-5 · The east-avenue lane/stall overlap
+### ✅ P1-5 · ~~The east-avenue lane/stall overlap~~ — **RESOLVED (2026-08-09)**
 `memory/project_twin_render_offmap_bug.md`
 
-`EAST_AISLE_X = 275` with lane offset 3.2 ⇒ the northbound lane body spans x 276.1–280.3 while an
-E-column car parked nosing east spans 279.4–289.6 ⇒ **0.9u of overlap on every northbound pass.**
-The dominant residual motion hotspot.
-
-Needs a **layout decision**, not a motion fix: move the carport, or drop the lane offset to ≤2.3
-(deliberately raised for passing clearance; the paint tracks it). West avenue has 4.1u clearance and
-no hotspot — **the principled fix is to mirror the west.**
+**FIXED 2026-08-09 by Hermes Agent.** E-column (`staging_east`, 25 stalls) shifted 2 plan units
+east: JS `x0` 284.5→286.5, `carport.x` 278→280; DB `relative_x` 437.21→440.35 (both depots).
+Migration 0027 applied. Verified with live simulation: 25/25 stalls occupied normally, 0 interrupted
+bookings. Clearance went from −0.9u to +3.85u. Mirrors the west avenue pattern (4.1u clearance,
+no hotspot).
 
 ### P1-6 · Four different cars exist
 `memory/reference_depot_plan_scale.md`
