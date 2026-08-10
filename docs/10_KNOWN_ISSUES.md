@@ -200,15 +200,10 @@ physics=10.2u. Fixture test confirms stuck samples dropped 130→73 (44%).
 a BEFORE trigger regardless of grants. **The same trigger pattern on `vehicles.current_stall_id` and
 `stalls.current_vehicle_id` makes rule 1 real with no schema DDL.**
 
-### P1-11 · The refusal path has never fired
+### ✅ P1-11 · The refusal path — RESOLVED
 `memory/project_ottoq_twin_boundary.md`
 
-`ottoq_vehicle_commands.status` allows `'refused'` and `ottoq_ack_vehicle_command` accepts a
-refusal — but **31,157 executed, 1,566 issued, ZERO refused / confirmed / expired, ever.**
-`ottoq_sim_confirm_commands` stamped `executed` unconditionally.
-
-Partially addressed by the pre-flight validation work (refusals now occur at issuance with
-`confirmed_by='otto_q_preflight'`). **Verify the current state before assuming either way.**
+**Resolved 2026-08-10 (migration 0036).** `ottoq_sim_confirm_commands` now validates commands before execution: checks stall availability and vehicle state compatibility. Invalid commands are stamped 'refused' with a reason instead of unconditionally 'executed'. Confirmed live in DB.
 
 ### P1-12 · Bay no-show
 `memory/project_orchestration_build_2026_08_01.md`
@@ -260,12 +255,10 @@ It holds 1.45 / 1.18 / 1.45 / 1.50 — the exact constants **hardcoded inside**
 `ottoq_seed_vehicle_need_profiles` — but the seeder **never reads the column.** Tuning it changes
 nothing while appearing to. **Either make it read, or delete the column so it stops lying.**
 
-### P1-17 · Mock fallbacks in the cockpits
+### ✅ P1-17 · Mock fallbacks in the cockpits — RESOLVED
 `memory/reference_live_data_model.md`
 
-Several OTTO-PULSE hooks (vehicles / stalls / incidents) still fall back to mock arrays on API
-error. **An honest empty state beats a plausible lie.** This directly undermines the ecosystem
-tie-in mandate.
+**Resolved 2026-08-10.** All mock data purged from both OTTO-PULSE (PR #11) and OrchestrAV (PR #17). Components now read from real Supabase hooks (`ottoqRpc`/`ottoqInvoke`) or show honest empty states. Fake vehicle arrays, stall lists, incident data, energy curves, and tariff schedules all removed. Types extracted, build verified.
 
 ---
 
