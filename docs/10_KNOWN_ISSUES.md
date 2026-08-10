@@ -309,23 +309,12 @@ pushing the hold later.** That is a design question, not a bug hunt.
 **What is left:** get one hold to `state='active'` with `vehicles.current_stall_id = booking.stall_id`,
 and then to `done`. Until that happens, the forward calendar reserves bays that nothing sits in.
 
-### P1-19 · The metronome ceiling guard shipped dead, and the pattern will recur
+### ✅ P1-19 · The metronome ceiling guard — RESOLVED
 `otto-q-core` MIGRATION_LOG rows 0012, 0013
 
-0012 added a guard so the metronome stops before `statement_timeout` guillotines it mid-tick. It read
-the deadline with `current_setting('statement_timeout', true)::numeric`.
+**Resolved by migration 0013.** The guard read `current_setting('statement_timeout')::numeric` which returns the display form `'2min'` — not a number. Migration 0013 fixed it to read `pg_settings.setting` instead (`'120000'` — the raw millisecond value). The pattern is now documented as a landmine in AGENTS.md.
 
-**`current_setting` returns the GUC *display* form.** On this instance that is `'2min'`, while
-`pg_settings.setting` is `'120000'`. `'2min'::numeric` raises 22P02, the function's own EXCEPTION
-handler set the ceiling to 0, and the guard's `IF` was false on every call. **It was dead code from
-the moment it shipped.** 0013 fixed it by reading `pg_settings.setting`.
-
-> ⭐ **The generalisable rule: `current_setting()` gives you the display string; `pg_settings.setting`
-> gives you the raw value in the GUC's base unit. Never cast the former to a number.**
-
-This is the same family as every other vacuous guard in this codebase. **Prove a guard has fired.**
-
-## 🟡 P2 — real, lower urgency
+### 🟡 P2 — real, lower urgency
 
 | # | Issue | Detail |
 |---|---|---|
