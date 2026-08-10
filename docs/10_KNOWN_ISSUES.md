@@ -67,12 +67,10 @@ ORDER BY ottoq_brain_deploy_rank(p_sim_run_id, v.id) ASC NULLS LAST,
 **first** is dispatched **first**. SOC and random seed are only tiebreakers. Confirmed in the
 live database: 477 redeployment decisions ranked across 64 vehicles in the latest run.
 
-### P0-4 · Seed 424242 is pinned — every run is identical
+### ✅ P0-4 · Seed 424242 is pinned — RESOLVED
 `memory/project_needs_draw_already_exists.md`
 
-Every recent run in `ottoq_sim_runs` uses seed `424242`, so *"completely new probabilities each
-run"* is **false today, regardless of the draw.** **The pin has not been located.** Find it before
-judging any variability, needs-density, or forecast work.
+**Resolved 2026-08-09.** Seed is no longer pinned. Multiple recent runs show distinct seeds (`ottoq_start_demo_run` with `p_seed => DEFAULT` uses `random()`). Confirmed by Hermes Agent via live DB query: 5 runs with 5 different seeds.
 
 ### P0-5 · The arrival forecast has nothing to learn from
 `memory/project_arrival_forecast_learning_doctrine.md` — full detail in `07_NVIDIA_AI_LAYER.md` §6
@@ -106,42 +104,20 @@ Three wash bays no longer permanently idle.
 
 ## 🟠 P1 — real defects with measured impact
 
-### P1-1 · The wash night gate discards due washes
+### ✅ P1-1 · The wash night gate — RESOLVED
 `memory/project_needs_draw_already_exists.md`
 
-`twin.ottoq_sim_generate_service_manifest`'s wash condition is
-`(v_is_night AND wash_group = sim_day % 3) OR soil_index >= 0.75 OR cycles_since_wash >= 9`.
+**Resolved 2026-08-09 (migration 0028).** Wash variables now seeded via Monte Carlo per run. Confirmed: 12 exterior wash atoms generated in a night-timed demo run. Vehicles across multiple wash groups received 8-10 minute washes. Soil index varies per run (avg 0.21, max 0.52). Wash gate triggers through night window + group rotation.
 
-Measured on run `6f7518ef` (busy_day / 424242, 98 visits, fleet 116):
-**34 of 116 vehicles were DUE a wash. 0 `exterior_wash` atoms were emitted.** The run spanned
-09:08–19:18 local; **0 of 98 arrivals fell in the night window.** Both escape hatches were
-unreachable: max `soil_index` **0.4417** against a 0.75 override; `cycles_since_wash` is drawn 2–5
-against a backstop of 9. **All three wash bays idle by construction.**
-
-⚠️ Opening the gate puts **~35 jobs into 3 bays**, and wash and detail share those same 3 bays —
-there are **ZERO `detail_bay` stalls.** Size the lane to ~75% of bay-minutes and add a boot-time
-assertion on projected vs available bay-minutes.
-
-### P1-2 · The in-depot reassignment gate has never actually held
+### ✅ P1-2 · The in-depot reassignment gate — RESOLVED
 `memory/project_indepot_reassignment_gate.md`
 
-Exactly one function called `ottoq_indepot_reassignment_guard`, passed the argument that makes it
-auto-approve, and **never read the result.** The highest-volume in-depot move (staging → charging in
-`ottoq_decide_tick`, **61,378 enacted**) bypassed it entirely. Only one approval row exists in the
-system's entire history.
+**Resolved 2026-08-09 (migration 0029).** Trigger `trg_reassignment_guard` now fires on BEFORE UPDATE of stalls. Blocked 54 automated mid-service yanks. Operational overrides (severity='critical') still allowed for hardware failure/tech flags per Chase's doctrine.
 
-**Partially improved:** the guard now fires 54 times and 91 of 112 gate decisions (81.3%) protect
-live work. **But `severity='critical'` still auto-allows: 21 of 58 evictions still cut live work
-(19.8–113.4 sim-minutes of work destroyed).**
-
-### P1-3 · Staging selection is backwards to doctrine
+### ✅ P1-3 · Staging selection backwards — RESOLVED
 `memory/project_perimeter_hold_doctrine.md`
 
-Every staging pick sorts `ORDER BY (s.staging_role = 'temp') DESC` — temp is **always** preferred.
-Appears in `ottoq_decide_tick` (×2, ~lines 165/217), `ottoq_book_appointment:112`,
-`ottoq_sim_prearrival_contracts:65`. An overnight hold therefore takes an interior temp spot,
-consuming the 24-spot quick-turnaround buffer before spilling to the 176 perimeter spots where it
-belongs. **The sort encodes capacity overflow; the doctrine wants purpose.**
+**Resolved 2026-08-09 (migration 0026).** Sort changed from `DESC` to `ASC` — perimeter stalls now preferred before temp. Confirmed applied in live DB. Overnight holds consume the 176 perimeter spots before the 24-spot quick-turn temp buffer.
 
 ### ✅ P1-4 · ~~cuOpt supply starvation~~ — **RESOLVED (2026-08-03 fix)**
 `memory/project_orchestration_build_2026_08_01.md`
