@@ -349,3 +349,28 @@ reassess against the twin's new variable spin-up.
 ⚠️ Certification runs are **not free** — one session added ~3 GB to `ottoq_events` by repeatedly
 running full-length certifications into a container that was already nearly full. **Budget runs
 against remaining headroom.**
+
+---
+
+## D16 — No ceiling on the front end while we build
+otto-q-core `CLAUDE.md` rule 13 (Chase, 2026-10-21)
+
+*"never base variable allocation of resources or throughput or up time or energy consumption based on a hard ceiling
+until we have everything built out ... if we start adding more vehicles, we shouldn't make them fit within a previous
+energy cap or any previous constraints. The vehicles needs take absolute precedence, and any energy needed is consumed,
+and we have to fit around that. ... once we run test and see what their consumption is like with additional vehicles and
+everything considered, then we can raise that ceiling ... and then try to work down that margin with battery energy
+storage or any other methods."*
+
+- **New hardware, robotics, chargers or vehicles go in with no ceiling below what they can draw.** A depot's power
+  limits are what is installed (the chargers', the battery's and the building's ratings), never a benchmark carried over
+  from before the build-out. No car is refused, slowed or held for power, and a growing fleet is never fitted inside the
+  previous fleet's cap.
+- **The ceiling comes after, from a measurement**, as its own certified change once the build is finished and tested.
+  Only then is the margin under it worked down, and only on the operator's side (the battery, the tariff, arbitrage),
+  never by a vehicle.
+- **"Fits within the cap" is not a design goal or a claim.** This is D7 extended from a single plug to the whole site, and
+  D14 applied to energy: a cap from before a build-out is a benchmark, and benchmarks wait until the build is done.
+- First applied by otto-q-core `0763`: the 30-post robotic depot on 10,500 kW DC and 12,250 kW service (what is
+  installed). Its first draft held the posts to 2.4 MW of shared cabinets; that held site survives only as the build-out
+  `dcfc30_cab2400`, for the margin work after a ceiling is set.
