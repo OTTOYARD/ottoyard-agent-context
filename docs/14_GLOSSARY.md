@@ -40,6 +40,8 @@
 | **DCFC** | Direct-current fast charging. ~150 kW. 10 at the flagship. |
 | **L2** | Level-2 AC charging. ~11 kW. ~35 at the flagship. A full charge from 28% is ~5 h on L2 vs ~22 min on DCFC. |
 | **Bay** | A wash, detail, or service space (as opposed to a charger or a staging spot). |
+| **Robotic wash bay** | *(added 2026-10-21)* At the twin depot since 2026-10-20 (`wash_lane_physics` = 2, otto-q-core 0746): a rollover gantry on two floor rails makes six passes over the parked car (pre-soak, two brush passes, rinse, two air-dry passes), about 5 min a car. A detail seat cleans the cabin first, about 16.5 min in all. The engine times the seat and publishes it (`bay_seat {since, ends_at}`, 0762); the renderer plays the machine inside it and holds the car until it is home. Design: `ottoyarddepot-sim/docs/OTTO-WASH.md`. |
+| **OTTO-CLEAN ARM** | *(added 2026-10-21)* An overhead cabin-cleaning arm at each fast-charger stall. While the car charges it opens the car's doors and cleans the interior, then the car may leave (dial `stall_cabin_robot`, on at the twin depot). It takes a must-do tidy only when a whole cycle of charge is left (0758). |
 | **Temp staging** | `staging_role='temp'`, 24 interior stalls. **Short, transient, mid-workflow.** |
 | **Perimeter staging** | `staging_role='long'`, 176 lot-edge stalls. **Longer-term and the overnight hold.** |
 | **Atom** | A single unit of required work on a visit (charge, exterior_wash, interior_deep_clean, sensor_calibration, brake_inspection, …). ⚠️ **The JSON key is `'svc'`**, not `'atom'`. |
