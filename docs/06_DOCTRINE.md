@@ -371,6 +371,7 @@ storage or any other methods."*
   never by a vehicle.
 - **"Fits within the cap" is not a design goal or a claim.** This is D7 extended from a single plug to the whole site, and
   D14 applied to energy: a cap from before a build-out is a benchmark, and benchmarks wait until the build is done.
-- First applied by otto-q-core `0763`: the 30-post robotic depot on 10,500 kW DC and 12,250 kW service (what is
-  installed). Its first draft held the posts to 2.4 MW of shared cabinets; that held site survives only as the build-out
-  `dcfc30_cab2400`, for the margin work after a ceiling is set.
+- First built into otto-q-core `0763` (written 2026-10-21; it waits for Chase at the database connector): the 30-post
+  robotic depot on 10,500 kW DC and 12,250 kW service (what is installed). Its first draft held the posts to 2.4 MW of
+  shared cabinets; that held site survives only as the build-out `dcfc30_cab2400`, for the margin work after a ceiling
+  is set.
