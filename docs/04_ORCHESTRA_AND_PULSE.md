@@ -246,8 +246,12 @@ arrives as **data**. Measured on otto-q-core, 2026-11-10:
 It is removed, and `profiles.ai_preferences_jsonb.model` is still saved as it was. Payment and sign-in brands stay
 where a buyer needs them (checkout, billing, the sign-in button).
 
-**Still open:** the twin's `TwinIntelligenceTab` and the decision log inside it draw the model's id and raw stack
-keys. Nothing mounts them. Fix or remove them before anyone does.
+**The twin's old Intelligence, Orchestration and Events tabs are removed (2026-11-10, in ottoyarddepot-sim #160).**
+They left navigation on 2026-09-30 and sat in the tree unmounted, and the Intelligence tab drew the model's id and raw
+stack keys from data. Two things in the twin now look dead and are not: nothing there imports `src/lib/eventFeed.ts`
+(both cockpits draw it), and `src/lib/intelligenceStack.ts` is types only. To find code an app cannot reach, walk the
+imports from its entry points. A search for a file's name counts a mention in a comment as a use: it found four of the
+six unreachable tab components.
 
 ---
 
