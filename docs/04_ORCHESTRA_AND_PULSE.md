@@ -212,6 +212,43 @@ both cockpits):
 **Links both ways.** A cockpit opens the twin on one machine: `/?tab=robotics&robot=<charge_arm|clean_arm|wash_gantry>`.
 The twin's Robotics tab opens PULSE on its Robots tab: `/?tab=robots` (with `source=twin&run=` while a run is live).
 
+### One set of words, and no vendor product on any screen (added 2026-11-10)
+
+Chase, 2026-10-07: *"I want to remove all specific tool naming from our descriptions. So for instance, I don't want to
+specifically name which Nvidia tools or specifically googles CP – SAT."* A model or a solver is named by what it does:
+the agent, the lexicographic planner, the GPU planner. The twin held this from October. Three PRs of 2026-11-10 bring
+the cockpits to it: ottoyarddepot-sim #160, ottoyard-field-ops #31 and ottoyard-OTTO-Q #37.
+
+**The words have one home: the twin.** Both cockpits carry these files in `src/lib/twin/`:
+
+| File | In a cockpit it is |
+|---|---|
+| `publicNames.ts`, `plainWords.ts`, `eventFeed.ts`, `secondLoop.ts` | a byte copy of the twin's `src/lib/` file (`cmp` proves it) |
+| `decisionText.ts` | the twin's, with its one row-type import changed |
+| their tests | the twin's, with import paths adjusted, in `__tests__/` |
+
+**Change the twin's copy first, then copy it to both.** Never edit a cockpit's copy. `decisionText.ts` imports
+`publicNames.ts`: carry them together.
+
+**The scan, and what it cannot see.** `publicNames.test.ts` reads every string an app writes (literals, templates,
+JSX text) and fails on a product name with its file and line. It runs in all three apps. It cannot see a name that
+arrives as **data**. Measured on otto-q-core, 2026-11-10:
+
+- **The activity feed's `engine` column is the model's id on an agent decision**
+  (`nvidia/nemotron-3-ultra-550b-a55b -> cpsat_service`): 5,304 of 9,360 agent decisions. Both cockpits drew it as
+  hover text. **Never draw `engine`, `agent_model` or a provider key as it comes.** `proposedBy()` names who proposed
+  a decision and never draws a model's id.
+- **The agent's own words can name a product or a file of ours.** It quoted `CLAUDE.md` by name on 10 of 9,360
+  agent decisions. Its summary, its directives and its reason go through `publicText()`. So does an upstream error.
+- A decision's reason, verb, action and source keys named no product on 62,788 decisions of two runs.
+
+**OrchestrAV's settings** had an "AI Model" picker that named three vendors' models and saved a value nothing read.
+It is removed, and `profiles.ai_preferences_jsonb.model` is still saved as it was. Payment and sign-in brands stay
+where a buyer needs them (checkout, billing, the sign-in button).
+
+**Still open:** the twin's `TwinIntelligenceTab` and the decision log inside it draw the model's id and raw stack
+keys. Nothing mounts them. Fix or remove them before anyone does.
+
 ---
 
 ## 4. Start-of-run variable selection (the other named lane)
