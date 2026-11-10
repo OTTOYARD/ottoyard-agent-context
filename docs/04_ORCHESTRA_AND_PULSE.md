@@ -166,6 +166,52 @@ Branches already carrying this work (unmerged as of 2026-08-08):
 
 **Check whether these merged before rebuilding any of it.**
 
+### The depot's robots in the three apps (added 2026-11-09)
+
+Chase, 2026-11-09: *"the robotics aspects of the depot need to be reflected in the UI's respectively. Pulse should
+have depot/operator level info on the functionality of the machines (not necessarily CAD-level, but functionality and
+facts). Orchestra needs just user/asset/vehicle owner detail from a stall or stage perspective. ... I think just the
+twin needs the CAD level detail."*
+
+The twin depot has three machines: a charge arm at each of the 30 fast chargers, a cleaning arm over each of them,
+and a wash machine in each of the 3 wash bays. Each app shows them at its own level:
+
+| App | Who reads it | What it shows |
+|---|---|---|
+| OTTO-TWIN, Robotics tab | engineering | the CAD: every part, the clash check, the service lines, the cycle on the model |
+| OTTO-PULSE, Robots tab | depot crew, every owner's cars | what each machine does (steps, facts, safety), what each arm and wash bay is doing now, the run's results |
+| OrchestrAV, each car's card | one fleet owner, its own cars | the machines at work on the car, the visit stage by stage with the station and the machine that does each stage, what each machine does to the car |
+
+**What a machine IS has one home: the twin.** `ottoyarddepot-sim/src/lib/robotics/machineFacts.ts` builds
+`public/cad/robot-facts.json` from the Robotics tab's own sources (the parts lists, the phase tables, the robot
+specs), and a test fails when the file is stale. Both cockpits carry a byte copy at `src/lib/twin/robotFacts.json`.
+**Change it in the twin, then copy it to both.** Never edit a cockpit's copy.
+
+**What a machine is DOING is read from the feeds, never from that file** (`src/lib/twin/robots.ts`, identical in
+both cockpits):
+
+- charge arm: the snapshot's `stalls_status` (`tethered`, `tether_direction`, `tether_phase`), `arm.cycles` (open
+  cycles, with retries), `arm.timings`, `arm.accuracy`;
+- cleaning arm: the car's visit atom `interior_tidy` with `performed_by: 'stall_cabin_robot'`, `robot_stall_id`,
+  `started_at`, `ends_at`, `done_at` (otto-q-core 0758);
+- wash machine: the car's `bay_seat {since, ends_at}` while its state is `in_wash_bay` or `in_detail_bay` (0762);
+- a car's stages: `ottoq_depot_cards` 1.5 `steps`, each with `to_stall_code` and `to_stall_kind` (0592);
+- run totals: `ottoq_twin_kpi_board` (`service.by_service`) and `ottoq_twin_events_window.by_type`.
+
+**Traps, each measured on run a0001fd6 (2026-11-07):**
+
+- **The card feed holds ONE step under way** (the first active leg). A cabin clean or a sensor inspection that runs
+  during the charge is not in `steps` until it is done. The cockpits add work under way from the visit's needs.
+- **A leg does not say who did it.** The need does (`performed_by`). 158 of 201 done interior-tidy legs were the
+  cleaning arm's. 6 itineraries hold a planned tidy leg the engine closed with no duration beside the arm's own leg:
+  show one stage, the one that ran.
+- **Every done wash and detail leg went to a wash bay** (59 of 59), so those stages are the wash machine's.
+- **Through a charge, `tether_until` is a lease the engine renews** (120 s at a time), not the charge's end.
+- **A car pulling out no longer points at its stall.** The arm's open cycle and the stall's tether still name it.
+
+**Links both ways.** A cockpit opens the twin on one machine: `/?tab=robotics&robot=<charge_arm|clean_arm|wash_gantry>`.
+The twin's Robotics tab opens PULSE on its Robots tab: `/?tab=robots` (with `source=twin&run=` while a run is live).
+
 ---
 
 ## 4. Start-of-run variable selection (the other named lane)
